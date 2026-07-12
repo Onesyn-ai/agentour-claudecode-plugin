@@ -1,4 +1,5 @@
 ---
+user-invocable: true
 name: berth-compiler
 description: Full-auto compiler — converts any agent into a Berth package, validates it, and publishes it to the platform. Before anything, probes the platform for available models, then thoroughly interviews the user to nail down every detail.
 ---
