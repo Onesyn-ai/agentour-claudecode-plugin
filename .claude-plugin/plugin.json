@@ -8,6 +8,6 @@
     "email": "jerry.h2oslabs@gmail.com"
   },
   "keywords": ["agent", "berth", "compiler", "package"],
-  "skills": "./skills"
+  "skills": "../skills"
 }
 
