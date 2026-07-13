@@ -165,6 +165,7 @@ Always pick the single most important unanswered question. Rough priority order:
 
 **Pricing & Distribution**:
 - 每次调用创造多大价值？（5-40 积分）
+- 发布到本地平台还是远程服务器？远程的话，有上传令牌吗（bt_ 开头，在控制台「发布」页生成）？
 - 仅自己用还是公开上架？
 - 起个中文名？选个 emoji？
 
@@ -265,8 +266,21 @@ If the validator finds issues, fix them immediately.
 
 ## Phase 6: Publish
 
+Check the spec: did the user say "远程" or provide a token?
+
+**Local publish** (default):
 ```bash
 core/.venv/bin/python -m berthcore publish packages/<agent-id>
+```
+
+**Remote publish** (if user has a token):
+```bash
+BERTH_URL=https://<用户提供的地址>:8600 \
+  BERTH_TOKEN=<用户在访谈中提供的bt_xxx令牌> \
+  curl -X POST "$BERTH_URL/v1/publish/remote" \
+    -H "Authorization: Bearer $BERTH_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "$(python3 scripts/package-bundle.py packages/<agent-id>)"
 ```
 
 If any gate fails:
