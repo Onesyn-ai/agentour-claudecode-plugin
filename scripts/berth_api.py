@@ -11,7 +11,7 @@ PLATFORMS = {
 }
 IGNORES = {"node_modules", ".output", ".eve", ".workflow-data", ".git", "__pycache__", ".DS_Store"}
 PATTERNS = {"*.log", "*.tmp", "*.swp", ".berth-*.log"}
-PLUGIN_VERSION = "2.4.0"
+PLUGIN_VERSION = "2.4.1"
 LATEST_MANIFEST_URL = "https://raw.githubusercontent.com/zhaomaota97/berth-compiler-plugin/master/plugin.json"
 
 
@@ -100,7 +100,7 @@ def check_update(args):
               "outdated": outdated, "updated": False}
     if outdated and args.auto:
         completed = subprocess.run(
-            ["claude", "plugin", "install", "berth-compiler@berth-platform"],
+            ["claude", "plugin", "update", "berth-compiler@berth-platform"],
             text=True, capture_output=True)
         result["updated"] = completed.returncode == 0
         if completed.returncode != 0: result["error"] = (completed.stderr or completed.stdout)[-1000:]

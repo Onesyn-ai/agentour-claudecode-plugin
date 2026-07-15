@@ -1,7 +1,7 @@
 {
   "name": "berth-compiler",
   "displayName": "Berth Compiler",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "Full-auto Berth compiler with versioned platform contract, model probes, clean packaging, one-question interviews, fidelity verification, publishing, and required post-run feedback.",
   "author": {
     "name": "Berth Platform",
