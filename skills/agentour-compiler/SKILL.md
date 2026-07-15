@@ -75,7 +75,7 @@ AGENTOUR_TOKEN="<token>" python3 "${CLAUDE_PLUGIN_ROOT}/scripts/agentour_api.py"
   --platform <local|competition> models
 ```
 
-The `models` command probes every returned model and removes failures from `data`; use `filtered_unavailable` only for diagnostics. Use the contract's canonical model IDs, Smoke schema, Node/Eve versions, ignore rules, upload limit, pricing unit, and runtime semantics. Choose only from filtered `data`, then run `model-probe <model>` once more immediately before generation. Do not use a model that fails. Ask a model choice only when the tradeoff is material.
+The `models` command probes every returned model, removes failures from `data`, sorts usable models by platform quality rank, and returns `recommended_model`. Unless the user explicitly names a model, requests a cost ceiling, or says to prioritize economy, always use `recommended_model`: Plugin-authored cost optimization must never silently downgrade Agent quality. Economic tradeoffs belong to the developer. Use `filtered_unavailable` only for diagnostics. Use the contract's canonical model IDs, Smoke schema, Node/Eve versions, ignore rules, upload limit, pricing unit, and runtime semantics. Run `model-probe <model>` once more immediately before generation and never use a model that fails.
 
 ### 4. Choose source
 

@@ -8,6 +8,14 @@
   "pricing": { "model": "per_run", "amount_credits": 10 },
   "secrets": [],
   "approval_required": [],
+  "inputs": {
+    "attachments": {
+      "accept": ["*/*"],
+      "max_files": 10,
+      "max_mb_each": 20,
+      "required": false
+    }
+  },
   "entry": {},
   "examples": ["EXAMPLE_1", "EXAMPLE_2"],
   "greeting": "GREETING_TEXT",
