@@ -5,7 +5,7 @@ Full-auto Claude Code Plugin for inventing new Agentour Agents or reconstructing
 ## Install
 
 ```text
-/plugin marketplace add agentour-platform https://github.com/zhaomaota97/agentour-compiler-plugin
+/plugin marketplace add agentour-platform https://github.com/Onesyn-ai/agentour-claudecode-plugin
 /plugin install agentour-compiler@agentour-platform
 ```
 
