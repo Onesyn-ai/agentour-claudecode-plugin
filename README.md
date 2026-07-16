@@ -27,8 +27,16 @@ The Plugin strictly asks one question or one choice per turn:
 4. Choose existing-Agent reconstruction or new-Agent invention.
 5. Internal brainstorm and grill-me agents conduct a multi-round, one-question interview.
 6. The Plugin generates Package(s), validates, repairs, and verifies fidelity.
-7. Choose private or public upload, then the Plugin publishes and follows the job.
+7. Choose private or public upload, run the remote Build Gate, then publish only after it succeeds.
 
 If a source repository contains multiple Agents, the Plugin inventories them and asks whether to merge all into one Package, convert all separately, or select a subset.
 
 A successful build is not considered proof of equivalence. Critical workflow, tool, approval, attachment, schema, or artefact mismatches block publication.
+
+## Remote Build behavior
+
+`remote-build` prints state changes and structured Gate results. A cached result reuses the
+same Package hash without consuming a new E2B quota. HTTP `429` means the developer's active
+or daily Build quota is exhausted; wait for the stated window instead of retrying unchanged
+content. Deterministic Gate failures must be repaired before retrying. Cancel a no-longer-needed
+job with `cancel-build <job-id>`; cancellation and timeout always produce a non-zero result.

@@ -160,6 +160,11 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/agentour_api.py" \
 
 Read the structured `gates` result. Repair deterministic failures narrowly and rerun only after Package content changes. Do not blindly retry unchanged content; the client may retry one transient platform/model failure internally. Publish only after the remote Build reaches `succeeded`.
 
+If the API returns `429`, report that the active/daily E2B quota is exhausted and wait; do not
+change the Package hash or loop retries to evade quota. A cached response is a valid Build result
+and consumes no new quota. If the user cancels or the Package is superseded, run
+`cancel-build <job-id>` and confirm the terminal status before starting another paid Build.
+
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/agentour_api.py" \
   --platform <local|competition> publish-async packages/<agent-id> \
