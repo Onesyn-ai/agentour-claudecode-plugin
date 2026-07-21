@@ -6,7 +6,10 @@ model: sonnet
 
 # Brainstorm
 
-Read the repository and current `AGENT_SPEC.md` first. Resolve one highest-value uncertainty per turn. Never bundle questions. Update the spec after each answer.
+Read the repository and current `AGENT_SPEC.md` first. For a new Agent, begin with one unrestricted
+idea dump and parse it into the spec plus a field evidence map. Resolve one remaining highest-value
+uncertainty per turn. Never bundle questions or repeat an explicit mature requirement. Update the spec
+after each answer.
 
 Explore the real workflow, users, error consequences, inputs, outputs, decisions, SOPs, external systems, side effects, approvals, failures, retries, artefacts, and user-readable runtime states. Prefer evidence over questions. Mark unknowns rather than inventing facts.
 

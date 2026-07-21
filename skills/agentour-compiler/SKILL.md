@@ -37,9 +37,15 @@ Each conversational turn may ask exactly one question or offer exactly one choic
 
 Never ask the user to type or configure a URL.
 
-## Mandatory sequence
+## Mandatory dual-state sequence
 
-Persist non-secret progress in `.agentour/compiler-state.json`. Never persist the token.
+Persist non-secret progress in `.agentour/compiler-state.json` and `/v1/dev/compiler-tasks`.
+After authentication, reconcile local and remote active tasks by task ID, Agent ID, operation,
+workspace ID, Package hash, revision, and update time. Platform job status overrides stale local
+`running` state. Restore a missing local workspace from the remote Package checkpoint after verifying
+SHA-256. Continue saved Validation, Build, Eval and Publish Job IDs; never resubmit them blindly.
+Upload a clean checkpoint before Package-changing stage transitions and mark terminal tasks completed
+or cancelled. Never persist the token or provider secrets.
 
 ### 1. Choose platform
 
@@ -77,11 +83,22 @@ AGENTOUR_TOKEN="<token>" python3 "${CLAUDE_PLUGIN_ROOT}/scripts/agentour_api.py"
 
 The `models` command probes every returned model, removes failures from `data`, sorts usable models by platform quality rank, and returns `recommended_model`. Unless the user explicitly names a model, requests a cost ceiling, or says to prioritize economy, always use `recommended_model`: Plugin-authored cost optimization must never silently downgrade Agent quality. Economic tradeoffs belong to the developer. Use `filtered_unavailable` only for diagnostics. Use the contract's canonical model IDs, Smoke schema, Node/Eve versions, ignore rules, upload limit, pricing unit, and runtime semantics. Run `model-probe <model>` once more immediately before generation and never use a model that fails.
 
-### 4. Choose source
+### 4. Choose intent and source
 
 Ask only:
 
-> 这次是：A. 重构已有 Agent；B. 从零发明一个 Agent？
+> 这次是：A. 更新已发布的 Agent；B. 重构已有项目；C. 从零创建 Agent？
+
+Do not ask again when the user's intent is already explicit.
+
+## Update an owned Agent
+
+Query `GET /v1/dev/packages` and `/v1/dev/packages/update-intents`. Match only Packages owned by the
+validated developer. Exact matches continue; fuzzy or multiple matches require one choice. A missing
+match must ask whether the name is wrong or creation was intended—never silently create. Download and
+hash-check the active immutable baseline, compare the highest SemVer, preserve unaffected behavior,
+and create a new immutable version. Revalidate the model, examples, approvals, deliverables, Knowledge
+Contract, Smoke, Evals and fidelity.
 
 ## Existing Agent path
 
@@ -101,7 +118,15 @@ Use the `brainstorm` and `grill-me` agents internally to challenge uncertain bus
 
 ## New Agent path
 
-Create `AGENT_SPEC.md` immediately, then dispatch `brainstorm` and `grill-me` internally. Collect exactly one unresolved fact per user turn across domain, job, user, error impact, inputs, outputs, workflow, missing data, ambiguity, tools, model judgment, integrations, secrets, approvals, SOPs, edge cases, forbidden actions, runtime labels, pricing, identity, and examples.
+Create `AGENT_SPEC.md` immediately and begin with one open invitation:
+
+> 请尽可能完整地讲讲你想做的 Agent。可以包括给谁用、解决什么问题、用户会提供什么、它要执行哪些步骤、需要连接哪些系统，以及最后交付什么；不完整也没关系，我会整理后只追问关键缺口。
+
+Extract the answer into a field evidence map with value, confidence, and source:
+`user_explicit`, `source_discovered`, `platform_discovered`, `inferred`, `defaulted`, or `missing`.
+Then dispatch `brainstorm` and `grill-me` internally. Ask one question per turn only for unresolved
+high-impact gaps or conflicts. Mature users may need few or no follow-ups; vague ideas retain the
+guided one-question flow. Do not reconfirm explicit answers or low-risk defaults.
 
 Do not generate until the intended workflow is precise. When the original request already authorizes creation, do not ask a separate “start coding” question.
 
@@ -186,7 +211,7 @@ Include run scope, successful publish result, P0/P1/P2 findings, evidence, root 
 ```bash
 AGENTOUR_TOKEN="<token>" python3 "${CLAUDE_PLUGIN_ROOT}/scripts/agentour_api.py" \
   --platform <local|competition> feedback "问题梳理与优化意见清单.md" \
-  --plugin-version "2.3.0" --operation <create|reconstruct> \
+  --plugin-version "2.8.0" --operation <create|reconstruct|update> \
   --agent-id <agent-id> --publish-job <job-id>
 ```
 
