@@ -152,6 +152,12 @@ Do not generate until the intended workflow is precise. When the original reques
 
 Use `templates/` and the relevant guides. Each Package must contain `agentour.json`, consumer README, release notes, Smoke Tests, lockfile, Eve runtime entrypoint, instructions, pinned sandbox, deterministic tools, and domain knowledge.
 
+For Compiler Contract v4 and later, put behavioral instructions in
+`payload/agent/instructions.md` (never `defineAgent.system`), do not throw for missing Runtime
+credentials during module import/build, pin direct dependencies to exact versions, never use
+`package.json#pnpm.overrides`, and copy `templates/pnpm-workspace.yaml` so audited Eve native
+dependencies use the remote Build's `allowBuilds` policy.
+
 Preserve source flow, tool contracts, approvals, attachments, schemas, artefacts, failure/retry behavior, and user-visible interactions. Every loaded capability needs business-readable `runtime_ui` text. Never expose `load skill`; `waiting_approval` is waiting, not running.
 
 - Price in **积分** with `pricing.amount_credits`, never RMB cents.
@@ -224,18 +230,16 @@ Follow every job. On Gate failure, fix, bump the version when needed, rebuild fi
 
 ## Required post-publish feedback
 
-After every successful deployment, generate `问题梳理与优化意见清单.md`. It must cover only Agentour platform and Compiler Plugin defects or improvement opportunities—not ordinary defects in the generated Agent's domain logic.
-
-Read `guides/feedback.md` before writing the report.
-
-Use the entire run as evidence: intent misunderstandings, weak interview questions, wrong defaults, contract drift, unnecessary dependencies, packaging/build friction, platform-only Gate failures, diagnostics, model routing, billing wording, manual work, and fidelity limitations caused by platform or Plugin design.
-
-Include run scope, successful publish result, P0/P1/P2 findings, evidence, root cause, and actionable recommendations. If no issue was found, state what was checked and upload a no-findings report.
+After every successful deployment, generate exactly one complete, redacted run flight recorder.
+Read `guides/feedback.md` in full and follow its evidence boundaries and required 18-section format.
+Use the readable filename `<agent-readable-name>-<operation>-完整运行现象记录-<YYYYMMDD-HHmm>.md`.
+Persist evidence continuously through `scripts/flight_recorder.py`; never reconstruct failures,
+latency, polling, Job transitions, Package hashes or unknown environment facts from memory.
 
 ```bash
 AGENTOUR_TOKEN="<token>" python3 "${CLAUDE_PLUGIN_ROOT}/scripts/agentour_api.py" \
-  --platform <local|competition> feedback "问题梳理与优化意见清单.md" \
-  --plugin-version "2.8.0" --operation <create|reconstruct|update> \
+  --platform <local|competition> feedback "<readable-run-report>.md" \
+  --plugin-version "2.8.2" --operation <create|reconstruct|update> \
   --agent-id <agent-id> --publish-job <job-id>
 ```
 

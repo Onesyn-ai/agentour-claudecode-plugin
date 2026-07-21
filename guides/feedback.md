@@ -1,5 +1,119 @@
-# 发布后的平台与 Plugin 反馈
+# Agentour Compiler 完整运行飞行记录器
 
-成功部署后生成 `问题梳理与优化意见清单.md`，包含复盘范围、Plugin/平台版本、contract version、Agent、Job、P0/P1/P2 问题、证据、根因和可执行建议。
+After every successful deployment, generate exactly one complete, redacted Markdown report for later AI investigation. This is a flight recorder, not a user summary, verdict, root-cause analysis, or prescribed fix.
 
-只记录平台或 Plugin 可以预防、检测、解释、自动修复或更好引导的问题。不要把普通 Agent 业务缺陷列为平台反馈。不得包含上传令牌、模型密钥、私密用户内容或其他 Secret。即使没有发现问题，也要说明检查范围并上传无问题报告。
+## File and visible title
+
+Use a readable filename:
+
+`<agent-readable-name>-<create|update|reconstruct>-完整运行现象记录-<YYYYMMDD-HHmm>.md`
+
+Use this H1:
+
+`# <Agent readable name> · <operation> · Agentour Compiler 完整运行现象记录`
+
+Never use generic names such as `result.md`, `feedback.md`, or `问题梳理与优化意见清单.md`.
+
+## Evidence rules
+
+- Preserve every failure, block, timeout, retry, Package mutation, recovery, long wait, repeated validation, and successful terminal job.
+- Record slow or opaque successful work too. `succeeded` does not erase latency, repeated polling, missing substage progress, or long heartbeat-only intervals.
+- Separate every statement into:
+  1. `已确认事实`: directly supported by a log, API response, file, state, timestamp, or Job.
+  2. `可能相关但未确认`: temporal/behavioral association without proven causality.
+  3. `本次运行无法确定`: missing platform data or source-level knowledge.
+- Do not emit `root_cause`, `responsible_component`, `confirmed_bug`, `required_fix`, or mandatory P0/P1/P2 labels without direct proof. A later success after a change proves sequence, not unique causality.
+- Preserve redacted raw error codes, dependency names/versions, Gate names, thresholds, Job states, and relevant excerpts.
+- Never store or report tokens, API keys, secrets, private attachment content, personal data, internal credentials, or large Base64/binary values.
+
+## Continuous recording requirement
+
+Do not reconstruct the run from memory after publishing. During the run, continuously persist non-secret evidence in both `.agentour/compiler-state.json` and the remote Compiler Task:
+
+- stage start/end/duration;
+- platform and Contract context;
+- local Node/pnpm/Eve versions and remote environment fields actually returned;
+- every Package hash and changed-file list;
+- every Validation, Build, Publish, model-probe, preflight, checkpoint, and feedback Job/API;
+- status transitions, heartbeat samples, poll count, polling interval, longest unchanged state, progress fields, timeout, quota fields, Gates, redacted errors;
+- user actions/choices and whether core requirements changed;
+- predecessor/successor Job relationships;
+- final evidence IDs.
+
+Keep a chronological `flight_events` array. Use stable event IDs `E-001`, `E-002`, etc. Sample repeated identical polling responses instead of storing every response, but retain enough samples to establish status duration, heartbeat behavior, progress granularity, and transition time.
+
+## Required report sections
+
+The single report must contain, in this order:
+
+1. 运行范围与上下文
+2. 用户请求及需求变化记录
+3. 最终发布结果
+4. 完整阶段时间线
+5. 全部失败、阻塞、超时和重试事件
+6. Package、配置及哈希变化记录
+7. Validation Job 记录
+8. Remote Build Job 记录
+9. Publish Job 记录
+10. 跨事件先后关系与现象链
+11. 用户参与及责任相关事实
+12. 时间和配额观测
+13. 已确认事实汇总
+14. 可能相关但未确认的观察
+15. 本次运行无法确定的信息
+16. 最终成功证据
+17. 脱敏原始错误汇总
+18. 机器可读事件数据
+
+Do not omit an empty required section. State `未观察到` or `平台未返回/本次无法确定`.
+
+## Context fields
+
+Record Plugin/version, platform name and URL type, Contract version, operation, Workspace ID, Compiler Task ID, Agent ID/readable name/version, visibility, reasoning and specialist models, Node, pnpm, Eve, Runtime Profile, final Package hash, and all remote environment facts returned. Mark unknowns explicitly; never guess.
+
+## Timeline and latency
+
+For every stage/Job record start, finish, duration, input/output hash, Job ID, terminal status, retry, user involvement, status-stall intervals, heartbeats, visible substage progress, poll count, polling interval, and known timeout.
+
+Include a table:
+
+| 阶段或 Job | 状态 | 开始 | 结束 | 持续秒数 | 已知超时 | 心跳 | 子阶段进度 | 轮询次数 |
+
+For long jobs include representative samples such as `00s running`, `60s running + heartbeat`, and the terminal sample. Record longest unchanged status and longest heartbeat-only interval.
+
+## Failure event format
+
+Each failure/block/timeout/unexpected retry gets a separate section with:
+
+- event identity, timestamps, stage, task/Job/Package/version/hash, predecessor/successor;
+- execution conditions and known environment;
+- command/API/Gate, remote-resource entry, quota_chargeable;
+- exact status/error code/redacted excerpt/returned fields/durations/timeout/heartbeat/progress/polls;
+- checks already passed;
+- subsequent action, changed files/values, behavior/security/test changes, new hash;
+- rerun results, recurrence/new error, successor Job;
+- evidence boundary: confirmed, unconfirmed, unknown.
+
+## Package mutations and Job graph
+
+For every hash change list before/after hashes, files, factual purpose, key value changes, effect on business rules, UX, approval, permissions, Smoke/Evals, and rerun Gates. Never claim a test was not weakened; describe exactly what changed.
+
+List all Jobs, including failed and superseded ones:
+
+| 顺序 | Job ID | 类型 | Package 哈希 | 开始 | 结束 | 结果 | quota_chargeable | 后续动作 | 后继 Job |
+
+Preserve cross-event chains and explicitly say that observed sequence alone does not prove a shared internal cause or unexpected platform behavior.
+
+## User facts
+
+Record initial request, later choices, contradictions, credential failures, approval rejection, cancellation/pause, Gate-bypass requests, dependency/environment mandates, and which steps required user action. If none caused failure, say so factually and add that this alone does not prove a platform or Plugin defect.
+
+## Machine-readable appendix
+
+End with one fenced JSON object using `report_schema_version: "1.0"`. Include `run`, `user_observations`, chronological `events`, and `final_evidence`. Each event includes sequence/time/stage/job/hash/status/Gate/error/quota/timing/timeout/heartbeat/stall/progress/polls/user-action/package-change/changes/verification-jobs/successor/confirmed-facts/unconfirmed-observations/unknowns.
+
+Do not include speculative ownership or required-fix fields.
+
+## Completion
+
+Upload this same report through the feedback API and retain the returned feedback ID in local and remote Compiler state. The final user response reports the readable report filename, feedback ID, final Validation/Build/Publish IDs, and total observed duration.
