@@ -219,6 +219,8 @@ If the API returns `429`, report that the active/daily E2B quota is exhausted an
 change the Package hash or loop retries to evade quota. A cached response is a valid Build result
 and consumes no new quota. If the user cancels or the Package is superseded, run
 `cancel-build <job-id>` and confirm the terminal status before starting another paid Build.
+If polling is interrupted or the local command times out, resume that exact paid Job with
+`track-build <job-id>`; never resubmit merely because observation stopped.
 
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/agentour_api.py" \

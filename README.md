@@ -40,3 +40,5 @@ same Package hash without consuming a new E2B quota. HTTP `429` means the develo
 or daily Build quota is exhausted; wait for the stated window instead of retrying unchanged
 content. Deterministic Gate failures must be repaired before retrying. Cancel a no-longer-needed
 job with `cancel-build <job-id>`; cancellation and timeout always produce a non-zero result.
+Interrupted observation can be continued with `track-build <job-id>` without creating or charging
+a replacement Build.
