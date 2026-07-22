@@ -160,6 +160,14 @@ dependencies use the remote Build's `allowBuilds` policy.
 
 Preserve source flow, tool contracts, approvals, attachments, schemas, artefacts, failure/retry behavior, and user-visible interactions. Every loaded capability needs business-readable `runtime_ui` text. Never expose `load skill`; `waiting_approval` is waiting, not running.
 
+Before generating files, turn the approved spec into an explicit acceptance contract. Every Package
+must declare `deliverable.required=true`, at least one `deliverable.formats` value, and at least two
+complete executable `examples`. Every generated tool must have a Chinese business name in
+`tool_ux.<tool>.zh_name`. Every approval tool must provide `title`, `purpose`, `action`, `impact`,
+`risk`, and `deny_effect` under `approval_ux`. Instructions must define minimum required input,
+formal `ask_question` behavior, completion criteria, honest tool-failure reporting, at most one retry
+for explicit transient failures, and a useful fallback deliverable. Do not leave template placeholders.
+
 - Price in **积分** with `pricing.amount_credits`, never RMB cents.
 - Generate Smoke `schema_version: 1` with only `send`, `expect_tool`, `expect_contains`, `expect_approval`, and `expect_question`.
 - Missing required input must call Eve `ask_question` and emit `input_requested`.

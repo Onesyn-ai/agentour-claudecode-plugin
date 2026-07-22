@@ -9,6 +9,9 @@
   "pricing": { "model": "per_run", "amount_credits": 10 },
   "secrets": [],
   "approval_required": [],
+  "tool_ux": {},
+  "approval_ux": {},
+  "deliverable": {"required": true, "formats": ["markdown"]},
   "inputs": {
     "attachments": {
       "accept": ["*/*"],
