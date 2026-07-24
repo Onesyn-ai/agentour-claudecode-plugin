@@ -148,6 +148,29 @@ guided one-question flow. Do not reconfirm explicit answers or low-risk defaults
 
 Do not generate until the intended workflow is precise. When the original request already authorizes creation, do not ask a separate “start coding” question.
 
+### Mandatory reference-material gate
+
+Before generating or modifying Package files, explicitly resolve whether the Agent depends on the
+expert's own documents, datasets, examples, SOPs, historical cases, databases, websites, repositories,
+or an existing MCP knowledge source. Never infer “no reference material” merely because the initial
+idea dump did not mention it. Unless the user already supplied materials or explicitly declined, the
+next highest-value single question must be:
+
+> 这个 Agent 是否需要使用你自己的参考资料或数据？如果需要，请提供本地文件路径，或说明它们来自网页、仓库、数据库还是现有 MCP；如果不需要，直接回答“不需要”。
+
+For local files, upload them to the selected platform before Package generation:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/agentour_api.py" --platform <test|production> \
+  upload-references <file> [<file> ...]
+```
+
+Then discover and evaluate the resulting knowledge assets, choosing reuse, extend, compose, or create.
+The Package stores only a channel-neutral `knowledge` requirement, never private source content or
+account-specific Asset IDs. Runtime receives the selected knowledge only through the scoped Knowledge
+MCP Gateway. Prefer a read-only connector/MCP for changing data. Persist the decision and uploaded source
+IDs in compiler state so resumed runs do not ask again or upload duplicates.
+
 ## Generate Package(s)
 
 Use `templates/` and the relevant guides. Each Package must contain `agentour.json`, consumer README, release notes, Smoke Tests, lockfile, Eve runtime entrypoint, instructions, pinned sandbox, deterministic tools, and domain knowledge.

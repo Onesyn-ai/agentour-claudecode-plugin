@@ -38,7 +38,11 @@ DEFAULT_IGNORES = {
     "__pycache__", ".DS_Store",
 }
 DEFAULT_PATTERNS = {"*.log", "*.tmp", "*.swp", ".agentour-*.log"}
-PLUGIN_VERSION = "2.8.3"
+def installed_plugin_version() -> str:
+    try:return str(json.loads((pathlib.Path(__file__).resolve().parents[1]/"plugin.json").read_text(encoding="utf-8"))["version"])
+    except (OSError,KeyError,TypeError,ValueError):return "0.0.0"
+
+PLUGIN_VERSION = installed_plugin_version()
 LATEST_MANIFEST_URL = "https://raw.githubusercontent.com/Onesyn-ai/agentour-claudecode-plugin/master/plugin.json"
 
 
@@ -593,6 +597,26 @@ def cmd_restore_checkpoint(args):
                       "sha256": actual}, ensure_ascii=False, indent=2), flush=True)
 
 
+def cmd_upload_references(args):
+    token=os.environ.get("AGENTOUR_TOKEN","").strip() or get_token(args.platform)
+    if not token.startswith("at_"):raise SystemExit("No saved developer token")
+    uploaded=[]
+    for raw in args.files:
+        path=pathlib.Path(raw).expanduser().resolve()
+        if not path.is_file():raise SystemExit(f"Reference file does not exist: {path}")
+        mime=__import__("mimetypes").guess_type(path.name)[0] or "application/octet-stream"
+        headers={"Authorization":f"Bearer {token}","Content-Type":mime,
+                 "X-Filename":urllib.parse.quote(path.name),"Accept":"application/json"}
+        req=urllib.request.Request(base_url(args.platform)+"/v1/dev/knowledge/sources/files",
+            data=path.read_bytes(),headers=headers,method="POST")
+        try:
+            with urllib.request.urlopen(req,timeout=180) as response:uploaded.append(json.loads(response.read()))
+        except urllib.error.HTTPError as exc:
+            raise SystemExit(f"Agentour API {exc.code}: {exc.read().decode('utf-8','replace')}") from exc
+    result=authenticated(args,"/v1/dev/knowledge/sources/files/finalize-batch",method="POST",body={})
+    print(json.dumps({"uploaded":uploaded,"assets":result.get("assets",[])},ensure_ascii=False,indent=2))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--platform", choices=PLATFORMS, default="production")
@@ -652,6 +676,8 @@ def main():
     restore = sub.add_parser("restore-checkpoint")
     restore.add_argument("task_id")
     restore.add_argument("destination")
+    references=sub.add_parser("upload-references")
+    references.add_argument("files",nargs="+")
     for name in ("publish", "publish-async"):
         publish = sub.add_parser(name)
         publish.add_argument("package")
@@ -714,6 +740,8 @@ def main():
         cmd_checkpoint_package(args)
     elif args.command == "restore-checkpoint":
         cmd_restore_checkpoint(args)
+    elif args.command == "upload-references":
+        cmd_upload_references(args)
     elif args.command == "publish":
         cmd_publish(args, False)
     else:
