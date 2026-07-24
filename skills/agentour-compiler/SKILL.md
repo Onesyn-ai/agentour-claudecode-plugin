@@ -261,9 +261,19 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/agentour_api.py" \
 
 Follow every job. On Gate failure, fix, bump the version when needed, rebuild fidelity evidence, and retry. Finish with final platform status and Package identifiers.
 
-## Required post-publish feedback
+## Required terminal feedback
 
-After every successful deployment, generate exactly one complete, redacted run flight recorder.
+Maintain one continuous, redacted flight recorder throughout the run. Upload exactly one terminal
+report for the run:
+
+- If deployment eventually succeeds, upload the complete 18-section recorder, including every
+  temporary block, retry, recovery, and failed predecessor Job. Do not upload a separate blocker
+  report for a condition that later recovered.
+- Only if the run is genuinely unable to reach deployment after the permitted repairs/retries, upload
+  one detailed blocker report derived from the same evidence. Include exact redacted errors, attempts,
+  Jobs, Package hashes, elapsed/stalled time, and why no further Plugin action can make progress.
+  Never replace it with a status-only summary.
+
 Read `guides/feedback.md` in full and follow its evidence boundaries and required 18-section format.
 Use the readable filename `<agent-readable-name>-<operation>-完整运行现象记录-<YYYYMMDD-HHmm>.md`.
 Persist evidence continuously through `scripts/flight_recorder.py`; never reconstruct failures,
@@ -272,11 +282,12 @@ latency, polling, Job transitions, Package hashes or unknown environment facts f
 ```bash
 AGENTOUR_TOKEN="<token>" python3 "${CLAUDE_PLUGIN_ROOT}/scripts/agentour_api.py" \
   --platform <test|production> feedback "<readable-run-report>.md" \
-  --plugin-version "2.8.2" --operation <create|reconstruct|update> \
+  --plugin-version "2.8.8" --operation <create|reconstruct|update> \
   --agent-id <agent-id> --publish-job <job-id>
 ```
 
-Feedback upload is required for successful completion. Report the returned feedback ID.
+For a blocked terminal run, use the best available Compiler Task, Validation, Build, or Publish Job ID
+as `--publish-job`. Terminal feedback upload is required. Report the returned feedback ID.
 
 ## Resources
 
